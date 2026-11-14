@@ -52,7 +52,14 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
 /* LOGIN */
 .login-box{padding:40px 20px;text-align:center}
 .login-box h2{margin-bottom:20px;color:var(--rose)}
-</style>
+/* Sembunyikan badge Netlify */
+#netlify-badge, 
+.netlify-badge,
+a[href*="netlify.com"][style*="position: fixed"] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}</style>
 </head>
 <body>
 <div class="app">
