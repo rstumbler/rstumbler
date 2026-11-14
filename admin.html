@@ -64,8 +64,8 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
   <div class="login-box" id="loginSection">
     <h2>Login Admin</h2>
     <div class="input-group">
-      <label>Email</label>
-      <input type="email" id="email" placeholder="admin@rstumbler.com">
+      <label>Username</label>
+      <input type="text" id="email" placeholder="yayu" required>
     </div>
     <div class="input-group">
       <label>Password</label>
@@ -148,7 +148,7 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
 
   // ===== LOGIN LOGIC =====
   document.getElementById('btnLogin').addEventListener('click', async () => {
-    const email = document.getElementById('email').value;
+    const emailLogin = document.getElementById('email').value + '@rstumbler.com';
     const password = document.getElementById('password').value;
     const btn = document.getElementById('btnLogin');
 
@@ -156,7 +156,7 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
     btn.disabled = true;
 
     try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email: emailLogin, password });
       if (error) throw error;
 
       localStorage.setItem('rstumbler_admin', 'true');
