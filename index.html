@@ -157,7 +157,7 @@ main{padding:0 16px}
     if (products.length === 0) { grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">Belum ada produk.</div>`; return; }
     grid.innerHTML = products.map(p => `
       <div class="card" onclick="openDetail('${p.id}')">
-        <img src="${p.image_url || 'https://via.placeholder.com/400x400/fbcfe8/9d174d?text=No+Image'}" alt="${p.name}">
+        <img src="${p.image_url || 'https://via.placeholder.com/400x400/fbcfe8/9d174d?text=No+Image'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/400x400/fbcfe8/9d174d?text=Gambar+Rusak'">
         <div class="card-body">
           <h3>${p.name}</h3>
           <div class="meta">${p.sizes ? p.sizes.join(" / ") : 'Standar'}</div>
