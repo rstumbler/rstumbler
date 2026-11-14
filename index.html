@@ -211,5 +211,7 @@ main{padding:0 16px}
   function updateBadge() { document.getElementById("cartBadge").innerText = cart.reduce((sum, item) => sum + item.qty, 0); }
   document.addEventListener("DOMContentLoaded", () => { loadProducts(); updateBadge(); });
 </script>
-</body>
+<div style="text-align:center; padding:20px; font-size:11px; color:#a88992; margin-top:20px;">
+  <a href="admin.html" style="color:#a88992; text-decoration:none;">Admin Area</a>
+</div></body>
 </html>
