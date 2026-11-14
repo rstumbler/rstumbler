@@ -1,0 +1,264 @@
+# INSTRUKSI CODEX: FASE 1 RSTUMBLER
+
+## PERINTAH UNTUK CODEX
+Tugas kamu: Baca instruksi ini. Buat file sesuai kode di bawah. 
+
+1. Buat folder `scripts` (jika belum ada). Simpan kode di bagian "KODE 1" ke dalam file `scripts/build-config.mjs`.
+2. Simpan kode di bagian "KODE 2" ke dalam file `netlify.toml` di root folder.
+3. Timpa seluruh isi file `index.html` dengan kode di bagian "KODE 3".
+
+---
+
+## KODE 1: scripts/build-config.mjs
+```javascript
+import fs from 'fs';
+import path from 'path';
+
+const envPath = path.resolve(process.cwd(), '.env');
+let envVars = {};
+
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8');
+  envContent.split('\n').forEach(line => {
+    const [key, ...value] = line.split('=');
+    if (key && value.length > 0) {
+      envVars[key.trim()] = value.join('=').trim().replace(/['"]/g, '');
+    }
+  });
+}
+
+const url = process.env.SUPABASE_URL || envVars.SUPABASE_URL || "";
+const key = process.env.SUPABASE_ANON_KEY || envVars.SUPABASE_ANON_KEY || "";
+const wa = process.env.WA_NUMBER || envVars.WA_NUMBER || "";
+
+const output = `window.SELARA_CONFIG = {
+  supabaseUrl: "${url}",
+  supabaseAnonKey: "${key}",
+  waNumber: "${wa}"
+};`;
+
+fs.writeFileSync(path.resolve(process.cwd(), 'runtime-config.js'), output);
+console.log('✅ runtime-config.js berhasil dibuat.');
+
+---------------------------------------------------
+
+[build]
+  publish = "."
+  command = "node scripts/build-config.mjs"
+
+  ------------------------------------------------
+  <!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RSTumbler - Tumbler Pilihan</title>
+<style>
+:root{--rose:#9d174d;--magenta:#db2777;--pink:#fbcfe8;--blush:#fdf2f8;--ink:#1f1a1c;--muted:#7a6068;--line:#f3d1e3;--white:#fff;--radius:18px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--blush);color:var(--ink);display:flex;justify-content:center;min-height:100vh}
+h1,h2,h3,.serif{font-family:Georgia,'Times New Roman',serif;font-weight:400}
+a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:none;background:none}
+.app{width:100%;max-width:1120px;min-height:100vh;position:relative;padding-bottom:40px;overflow-x:hidden}
+.header{position:sticky;top:0;z-index:50;background:rgba(253,242,248,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:40px;height:40px;border-radius:50%;border:2px solid var(--rose);display:grid;place-items:center;background:#fff}
+.logo-mark span{font-family:Georgia,serif;font-weight:700;color:var(--rose);font-size:20px}
+.logo-text b{font-family:Georgia,serif;letter-spacing:.14em;font-size:18px;color:var(--rose)}
+.logo-text small{display:block;letter-spacing:.32em;font-size:10px;color:var(--muted);margin-top:2px}
+.cart-btn{position:relative;border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;display:flex;gap:8px;align-items:center;font-weight:600;font-size:13px;color:var(--rose)}
+.cart-badge{position:absolute;top:-6px;right:-4px;background:var(--magenta);color:#fff;min-width:20px;height:20px;border-radius:999px;display:grid;place-items:center;font-size:11px;padding:0 5px}
+main{padding:0 16px}
+.hero{padding:24px 4px 16px}
+.hero h1{font-size:28px;line-height:1.2;margin:0;color:var(--rose)}
+.hero p{color:var(--muted);margin:8px 0 0;font-size:14px}
+.catalog-bar{display:flex;gap:10px;margin:16px 0}
+.search-box{flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:12px 16px}
+.search-box input{border:0;outline:0;width:100%;font-size:14px;background:transparent}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:860px){.grid{grid-template-columns:repeat(4,1fr)} .hero h1{font-size:38px}}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:left;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s}
+.card:active{transform:scale(.98)}
+.card img{width:100%;aspect-ratio:1/1;object-fit:cover;background:var(--blush)}
+.card-body{padding:12px}
+.card-body h3{margin:0;font-size:14px;font-weight:800;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-body .meta{color:var(--muted);font-size:11px;margin:4px 0}
+.price{font-weight:800;color:var(--rose);font-size:15px;margin-top:4px}
+.hint{font-size:10px;color:var(--magenta);margin-top:6px}
+.overlay{position:fixed;inset:0;background:rgba(31,26,28,.55);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:100;padding:0}
+.overlay.open{display:flex}
+.modal{background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;max-height:90vh;overflow-y:auto;padding-bottom:20px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:10}
+.modal-head h2{font-size:16px;font-weight:800}
+.close-btn{width:32px;height:32px;border-radius:50%;background:var(--blush);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink)}
+.modal-img{width:100%;aspect-ratio:1/1;object-fit:cover;background:var(--blush)}
+.modal-body{padding:20px}
+.modal-body h2{font-size:22px;margin-bottom:4px}
+.modal-price{font-size:22px;font-weight:800;color:var(--rose);margin-bottom:12px}
+.modal-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px}
+.opt-label{font-size:12px;font-weight:800;margin-bottom:8px}
+.chip-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip-btn{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:600}
+.chip-btn.active{background:var(--rose);color:#fff;border-color:var(--rose)}
+.toggle{display:flex;justify-content:space-between;align-items:center;background:var(--blush);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+.toggle input{width:40px;height:22px;accent-color:var(--magenta)}
+.custom-input{width:100%;padding:12px;border:1.5px dashed #e8b4c8;border-radius:10px;font-size:13px;margin-top:-8px;margin-bottom:16px;display:none;outline:none}
+.custom-input.show{display:block}
+.qty-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.stepper{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.stepper button{width:36px;height:36px;font-size:18px;font-weight:700;color:var(--rose)}
+.stepper span{width:36px;text-align:center;font-weight:800;font-size:14px}
+.total-row{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:16px;margin-bottom:16px}
+.btn-add{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,var(--magenta),var(--rose));color:#fff;font-weight:800;font-size:15px;box-shadow:0 8px 20px rgba(219,39,119,.3)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <a href="#" class="logo">
+      <span class="logo-mark"><span>R</span></span>
+      <span class="logo-text"><b>RSTUMBLER</b><small>PREMIUM</small></span>
+    </a>
+    <button class="cart-btn" onclick="alert('Halaman keranjang segera hadir!')">
+      🛒 Keranjang <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+  </header>
+  <main>
+    <div class="hero">
+      <h1>Tumbler pilihan,<br>dibuat khusus untukmu.</h1>
+      <p>Temukan tumbler favoritmu, atur warna & ukuran, lalu pesan.</p>
+    </div>
+    <div class="catalog-bar">
+      <label class="search-box">🔍 <input id="searchInput" placeholder="Cari tumbler..."></label>
+    </div>
+    <div class="grid" id="grid">
+      <div style="grid-column:1/-1;text-align:center;padding:20px;">Memuat produk...</div>
+    </div>
+  </main>
+  <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Detail Produk</h2>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+      <img class="modal-img" id="mImg" src="" alt="">
+      <div class="modal-body">
+        <h2 id="mName"></h2>
+        <div class="modal-price" id="mPrice"></div>
+        <p class="modal-desc" id="mDesc"></p>
+        <div class="opt-label">Ukuran</div>
+        <div class="chip-group" id="mSizes"></div>
+        <div class="opt-label">Warna</div>
+        <div class="chip-group" id="mColors"></div>
+        <div id="customBox">
+          <label class="toggle">
+            <span><b>Custom Nama</b><br><small>+Rp15.000 / item</small></span>
+            <input type="checkbox" id="customCheck" onchange="toggleCustom()">
+          </label>
+          <input type="text" id="customNameInput" class="custom-input" placeholder="Tulis nama..." maxlength="20" oninput="updateTotal()">
+        </div>
+        <div class="qty-row">
+          <b>Jumlah</b>
+          <div class="stepper">
+            <button onclick="changeQty(-1)">−</button>
+            <span id="mQty">1</span>
+            <button onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+        <div class="total-row">
+          <span>Total</span>
+          <b id="mTotal" style="font-size:20px;color:var(--rose)"></b>
+        </div>
+        <button class="btn-add" onclick="addToCart()">Tambah ke Keranjang</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/runtime-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const CONFIG = window.SELARA_CONFIG || {};
+  let supabaseClient = null;
+  if (CONFIG.supabaseUrl && CONFIG.supabaseAnonKey) {
+    supabaseClient = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+  }
+  let ALL_PRODUCTS = [];
+  let cart = JSON.parse(localStorage.getItem("rstumbler_cart") || "[]");
+  let currentProduct = null;
+  let currentSize = "";
+  let currentColor = "";
+  let currentQty = 1;
+  let useCustom = false;
+  const CUSTOM_FEE = 15000;
+  const rupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
+  async function loadProducts() {
+    const grid = document.getElementById("grid");
+    if (!supabaseClient) { grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:red;">Config Supabase gagal dimuat. Cek .env dan netlify.toml</div>`; return; }
+    try {
+      const { data, error } = await supabaseClient.from("products_public").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      ALL_PRODUCTS = data || [];
+      renderProducts(ALL_PRODUCTS);
+    } catch (err) { grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:red;">Gagal memuat: ${err.message}</div>`; }
+  }
+  function renderProducts(products) {
+    const grid = document.getElementById("grid");
+    if (products.length === 0) { grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">Belum ada produk.</div>`; return; }
+    grid.innerHTML = products.map(p => `
+      <div class="card" onclick="openDetail('${p.id}')">
+        <img src="${p.image_url || 'https://via.placeholder.com/400x400/fbcfe8/9d174d?text=No+Image'}" alt="${p.name}">
+        <div class="card-body">
+          <h3>${p.name}</h3>
+          <div class="meta">${p.sizes ? p.sizes.join(" / ") : 'Standar'}</div>
+          <div class="price">${rupiah(p.price)}</div>
+          <div class="hint">Klik untuk detail</div>
+        </div>
+      </div>
+    `).join("");
+  }
+  document.getElementById("searchInput").addEventListener("input", (e) => {
+    const q = e.target.value.toLowerCase();
+    renderProducts(ALL_PRODUCTS.filter(p => p.name.toLowerCase().includes(q)));
+  });
+  function openDetail(id) {
+    currentProduct = ALL_PRODUCTS.find(p => p.id === id);
+    if (!currentProduct) return;
+    currentQty = 1; useCustom = false;
+    currentSize = currentProduct.sizes && currentProduct.sizes.length > 0 ? currentProduct.sizes[0] : "Standar";
+    currentColor = currentProduct.colors && currentProduct.colors.length > 0 ? currentProduct.colors[0] : "Standar";
+    document.getElementById("mImg").src = currentProduct.image_url || 'https://via.placeholder.com/400x400/fbcfe8/9d174d?text=No+Image';
+    document.getElementById("mName").innerText = currentProduct.name;
+    document.getElementById("mPrice").innerText = rupiah(currentProduct.price);
+    document.getElementById("mDesc").innerText = currentProduct.description || "Belum ada deskripsi.";
+    document.getElementById("mSizes").innerHTML = (currentProduct.sizes || ["Standar"]).map(s => `<button class="chip-btn ${s === currentSize ? 'active' : ''}" onclick="selectSize('${s}')">${s}</button>`).join("");
+    document.getElementById("mColors").innerHTML = (currentProduct.colors || ["Standar"]).map(c => `<button class="chip-btn ${c === currentColor ? 'active' : ''}" onclick="selectColor('${c}')">${c}</button>`).join("");
+    document.getElementById("customCheck").checked = false;
+    document.getElementById("customNameInput").classList.remove("show");
+    document.getElementById("customNameInput").value = "";
+    document.getElementById("customBox").style.display = currentProduct.can_custom ? "block" : "none";
+    document.getElementById("mQty").innerText = currentQty;
+    updateTotal();
+    document.getElementById("overlay").classList.add("open");
+  }
+  function selectSize(s) { currentSize = s; document.querySelectorAll("#mSizes .chip-btn").forEach(b => b.classList.toggle("active", b.innerText === s)); }
+  function selectColor(c) { currentColor = c; document.querySelectorAll("#mColors .chip-btn").forEach(b => b.classList.toggle("active", b.innerText === c)); }
+  function toggleCustom() { useCustom = !useCustom; document.getElementById("customCheck").checked = useCustom; document.getElementById("customNameInput").classList.toggle("show", useCustom); if (useCustom) document.getElementById("customNameInput").focus(); updateTotal(); }
+  function changeQty(d) { if (currentQty + d >= 1) { currentQty += d; document.getElementById("mQty").innerText = currentQty; updateTotal(); } }
+  function updateTotal() { let total = currentProduct.price * currentQty; if (useCustom) total += CUSTOM_FEE * currentQty; document.getElementById("mTotal").innerText = rupiah(total); }
+  function closeModal() { document.getElementById("overlay").classList.remove("open"); }
+  function addToCart() {
+    const customName = document.getElementById("customNameInput").value.trim();
+    if (useCustom && !customName) { alert("Isi nama custom dulu ya!"); return; }
+    const item = { id: currentProduct.id, name: currentProduct.name, price: currentProduct.price, image: currentProduct.image_url, size: currentSize, color: currentColor, qty: currentQty, custom: useCustom ? customName : "", fee: useCustom ? CUSTOM_FEE : 0 };
+    const existingIdx = cart.findIndex(i => i.id === item.id && i.size === item.size && i.color === item.color && i.custom === item.custom);
+    if (existingIdx > -1) { cart[existingIdx].qty += item.qty; } else { cart.push(item); }
+    localStorage.setItem("rstumbler_cart", JSON.stringify(cart));
+    updateBadge();
+    closeModal();
+    alert("Masuk keranjang!");
+  }
+  function updateBadge() { document.getElementById("cartBadge").innerText = cart.reduce((sum, item) => sum + item.qty, 0); }
+  document.addEventListener("DOMContentLoaded", () => { loadProducts(); updateBadge(); });
+</script>
+</body>
+</html>
