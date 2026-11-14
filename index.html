@@ -53,7 +53,9 @@ main{padding:0 16px}
 .chip-btn.active{background:var(--rose);color:#fff;border-color:var(--rose)}
 .toggle{display:flex;justify-content:space-between;align-items:center;background:var(--blush);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
 .toggle input{width:40px;height:22px;accent-color:var(--magenta)}
-.custom-input{width:100%;padding:12px;border:1.5px dashed #e8b4c8;border-radius:10px;font-size:13px;margin-top:-8px;margin-bottom:16px;display:none;outline:none}
+.custom-box{display:none;background:var(--blush);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+.custom-box.show{display:block}
+.custom-input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;margin-top:8px;display:none}
 .custom-input.show{display:block}
 .qty-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 .stepper{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
@@ -115,10 +117,10 @@ iframe[title="Netlify"] {
         <div class="chip-group" id="mSizes"></div>
         <div class="opt-label">Warna</div>
         <div class="chip-group" id="mColors"></div>
-        <div id="customBox">
-          <label class="toggle">
-            <span><b>Custom Nama</b><br><small>+Rp15.000 / item</small></span>
-            <input type="checkbox" id="customCheck" onchange="toggleCustom()">
+        <div id="customBox" class="custom-box">
+          <label style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:bold;">
+            <span>Tambah Custom Nama (+Rp15.000)</span>
+            <input type="checkbox" id="customCheck" onchange="toggleCustom()" style="width:18px; height:18px; margin:0;">
           </label>
           <input type="text" id="customNameInput" class="custom-input" placeholder="Tulis nama..." maxlength="20" oninput="updateTotal()">
         </div>
@@ -197,10 +199,20 @@ iframe[title="Netlify"] {
     document.getElementById("mDesc").innerText = currentProduct.description || "Belum ada deskripsi.";
     document.getElementById("mSizes").innerHTML = (currentProduct.sizes || ["Standar"]).map(s => `<button class="chip-btn ${s === currentSize ? 'active' : ''}" onclick="selectSize('${s}')">${s}</button>`).join("");
     document.getElementById("mColors").innerHTML = (currentProduct.colors || ["Standar"]).map(c => `<button class="chip-btn ${c === currentColor ? 'active' : ''}" onclick="selectColor('${c}')">${c}</button>`).join("");
-    document.getElementById("customCheck").checked = false;
-    document.getElementById("customNameInput").classList.remove("show");
-    document.getElementById("customNameInput").value = "";
-    document.getElementById("customBox").style.display = currentProduct.can_custom ? "block" : "none";
+    const customBox = document.getElementById('customBox');
+    const customCheck = document.getElementById('customCheck');
+    const customInput = document.getElementById('customNameInput');
+    if (currentProduct.can_custom) {
+      customBox.classList.add('show');
+      customCheck.checked = false;
+      customInput.classList.remove('show');
+      customInput.value = '';
+    } else {
+      customBox.classList.remove('show');
+      customCheck.checked = false;
+      customInput.classList.remove('show');
+      customInput.value = '';
+    }
     document.getElementById("mQty").innerText = currentQty;
     updateTotal();
     document.getElementById("overlay").classList.add("open");
@@ -208,14 +220,25 @@ iframe[title="Netlify"] {
   }
   function selectSize(s) { currentSize = s; document.querySelectorAll("#mSizes .chip-btn").forEach(b => b.classList.toggle("active", b.innerText === s)); }
   function selectColor(c) { currentColor = c; document.querySelectorAll("#mColors .chip-btn").forEach(b => b.classList.toggle("active", b.innerText === c)); }
-  function toggleCustom() { useCustom = !useCustom; document.getElementById("customCheck").checked = useCustom; document.getElementById("customNameInput").classList.toggle("show", useCustom); if (useCustom) document.getElementById("customNameInput").focus(); updateTotal(); }
+  function toggleCustom() {
+    const isChecked = document.getElementById('customCheck').checked;
+    useCustom = isChecked;
+    document.getElementById('customNameInput').classList.toggle('show', isChecked);
+    if (isChecked) document.getElementById('customNameInput').focus();
+    updateTotal();
+  }
   function changeQty(d) { if (currentQty + d >= 1) { currentQty += d; document.getElementById("mQty").innerText = currentQty; updateTotal(); } }
-  function updateTotal() { let total = currentProduct.price * currentQty; if (useCustom) total += CUSTOM_FEE * currentQty; document.getElementById("mTotal").innerText = rupiah(total); }
+  function updateTotal() {
+    let total = currentProduct.price * currentQty;
+    if (document.getElementById('customCheck').checked) total += 15000 * currentQty;
+    document.getElementById("mTotal").innerText = rupiah(total);
+  }
   function closeModal() { document.getElementById("overlay").classList.remove("open"); }
   function addToCart() {
     const customName = document.getElementById("customNameInput").value.trim();
-    if (useCustom && !customName) { alert("Isi nama custom dulu ya!"); return; }
-    const item = { id: currentProduct.id, name: currentProduct.name, price: currentProduct.price, image: currentProduct.image_url, size: currentSize, color: currentColor, qty: currentQty, custom: useCustom ? customName : "", fee: useCustom ? CUSTOM_FEE : 0 };
+    const isCustom = document.getElementById('customCheck').checked;
+    if (isCustom && !customName) { alert('Isi nama custom dulu ya!'); return; }
+    const item = { id: currentProduct.id, name: currentProduct.name, price: currentProduct.price, image: currentProduct.image_url, size: currentSize, color: currentColor, qty: currentQty, custom: isCustom ? customName : "", fee: isCustom ? 15000 : 0 };
     const existingIdx = cart.findIndex(i => i.id === item.id && i.size === item.size && i.color === item.color && i.custom === item.custom);
     if (existingIdx > -1) { cart[existingIdx].qty += item.qty; } else { cart.push(item); }
     localStorage.setItem("rstumbler_cart", JSON.stringify(cart));
