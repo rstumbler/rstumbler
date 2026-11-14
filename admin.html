@@ -297,10 +297,19 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
       // Upload foto jika ada file baru
       if (file) {
         const fileName = `produk-${Date.now()}.${file.name.split('.').pop()}`;
-        const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, file);
-        if (uploadError) throw new Error("Gagal upload foto: " + uploadError.message);
+        const filePath = `produk/${fileName}`;
+        const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(filePath, file);
+        if (uploadError && uploadError.message.includes('not found')) {
+          // Jika folder belum ada, buat file dummy untuk inisialisasi folder
+          await supabaseClient.storage.from('product-images').upload('produk/.init', new Blob(['']));
+          // Coba upload ulang
+          const retry = await supabaseClient.storage.from('product-images').upload(filePath, file);
+          if (retry.error) throw new Error("Gagal upload foto: " + retry.error.message);
+        } else if (uploadError) {
+          throw new Error("Gagal upload foto: " + uploadError.message);
+        }
         
-        const { data: publicUrl } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
+        const { data: publicUrl } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
         imageUrl = publicUrl.publicUrl;
       }
 
