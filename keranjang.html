@@ -42,13 +42,16 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
 .total-row span{font-size:13px;color:var(--muted)}
 .total-row b{font-size:22px;color:var(--rose);font-family:Georgia,serif}
 .btn-checkout{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,var(--magenta),var(--rose));color:#fff;font-weight:800;font-size:15px;box-shadow:0 8px 20px rgba(219,39,119,.3);display:flex;align-items:center;justify-content:center;gap:8px}
-/* Sembunyikan badge Netlify */
+/* Sembunyikan Badge Netlify */
 #netlify-badge, 
 .netlify-badge,
-a[href*="netlify.com"][style*="position: fixed"] {
+a[href*="netlify.com"][style*="position: fixed"],
+iframe[title="Netlify"] {
     display: none !important;
+    visibility: hidden !important;
     opacity: 0 !important;
     pointer-events: none !important;
+    z-index: -9999 !important;
 }</style>
 </head>
 <body>
