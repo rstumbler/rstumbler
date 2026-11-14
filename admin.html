@@ -132,6 +132,7 @@ a[href*="netlify.com"][style*="position: fixed"] {
       <h3 style="margin-bottom:16px;">Tambah Produk</h3>
       <form id="formProduk">
         <div class="form-group"><label>Nama Produk</label><input type="text" id="pName" required></div>
+        <div class="form-group"><label>Foto Produk</label><input type="file" id="pFile" accept="image/*" style="padding:8px;"></div>
         <div class="form-group"><label>Harga Jual (Rp)</label><input type="number" id="pPrice" required></div>
         <div class="form-group"><label>Harga Modal (Rp)</label><input type="number" id="pCost" required></div>
         <div class="form-group"><label>Ukuran (Pisahkan koma)</label><input type="text" id="pSizes" placeholder="500ml, 750ml"></div>
@@ -268,14 +269,24 @@ a[href*="netlify.com"][style*="position: fixed"] {
     e.preventDefault();
     const sizes = document.getElementById('pSizes').value.split(',').map(s => s.trim()).filter(Boolean);
     const colors = document.getElementById('pColors').value.split(',').map(c => c.trim()).filter(Boolean);
-    const newProd = {
-      name: document.getElementById('pName').value,
-      price: Number(document.getElementById('pPrice').value),
-      cost_price: Number(document.getElementById('pCost').value),
-      sizes,
-      colors
-    };
+    let imageUrl = null;
     try {
+      const file = document.getElementById('pFile').files[0];
+      if (file) {
+        const namaFile = `${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(namaFile, file);
+        if (uploadError) throw uploadError;
+        imageUrl = supabaseClient.storage.from('product-images').getPublicUrl(namaFile).data.publicUrl;
+      }
+
+      const newProd = {
+        name: document.getElementById('pName').value,
+        price: Number(document.getElementById('pPrice').value),
+        cost_price: Number(document.getElementById('pCost').value),
+        sizes,
+        colors,
+        image_url: imageUrl
+      };
       const { error } = await supabaseClient.from('products').insert([newProd]);
       if (error) throw error;
       alert('Produk ditambahkan!');
