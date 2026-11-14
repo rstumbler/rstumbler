@@ -334,18 +334,24 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
       if (id) {
         // EDIT
         const { error } = await supabaseClient.from('products').update(newProd).eq('id', id);
-        if (error) throw error;
+        if (error) {
+          alert('Gagal menyimpan: ' + error.message);
+          return;
+        }
         alert('Produk diupdate!');
       } else {
         // TAMBAH
         const { error } = await supabaseClient.from('products').insert([newProd]);
-        if (error) throw error;
+        if (error) {
+          alert('Gagal menyimpan: ' + error.message);
+          return;
+        }
         alert('Produk ditambahkan!');
       }
 
       document.getElementById('overlayProd').classList.remove('open');
       loadData();
-    } catch(err) { alert(err.message); }
+    } catch(err) { alert('Gagal menyimpan: ' + err.message); }
     finally { btn.innerText = 'Simpan Produk'; btn.disabled = false; }
   };
 
@@ -380,10 +386,13 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
     if (!confirm('Yakin mau hapus produk ini?')) return;
     try {
       const { error } = await supabaseClient.from('products').delete().eq('id', id);
-      if (error) throw error;
+      if (error) {
+        alert('Gagal menghapus: ' + error.message);
+        return;
+      }
       alert('Produk dihapus!');
       loadData();
-    } catch(err) { alert(err.message); }
+    } catch(err) { alert('Gagal menghapus: ' + err.message); }
   }
 
   // SUBMIT ORDER
