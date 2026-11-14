@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Keranjang - RSTumbler</title>
+<style>
+:root{--rose:#9d174d;--magenta:#db2777;--pink:#fbcfe8;--blush:#fdf2f8;--ink:#1f1a1c;--muted:#7a6068;--line:#f3d1e3;--white:#fff;--radius:18px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--blush);color:var(--ink);display:flex;justify-content:center;min-height:100vh}
+h1,h2,h3,.serif{font-family:Georgia,'Times New Roman',serif;font-weight:400}
+a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:none;background:none}
+.app{width:100%;max-width:480px;background:var(--blush);min-height:100vh;position:relative;padding-bottom:100px;box-shadow:0 0 50px rgba(157,23,77,.12)}
+
+/* HEADER */
+.header{display:flex;align-items:center;gap:12px;padding:16px 20px;background:rgba(253,242,248,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+.back-btn{width:36px;height:36px;border-radius:12px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink)}
+.header-title{font-size:16px;font-weight:800;flex:1}
+
+/* CART LIST */
+.cart-list{padding:16px 20px}
+.cart-item{background:#fff;border-radius:16px;padding:12px;margin-bottom:12px;border:1px solid var(--line);display:flex;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.item-img{width:70px;height:70px;border-radius:12px;background:var(--blush);object-fit:cover}
+.item-info{flex:1}
+.item-name{font-size:13px;font-weight:800;margin-bottom:2px}
+.item-meta{font-size:10.5px;color:var(--muted);margin-bottom:6px}
+.item-price{font-size:13px;font-weight:800;color:var(--rose)}
+.item-actions{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--blush)}
+.stepper button{width:28px;height:28px;font-size:14px;font-weight:bold;color:var(--rose)}
+.stepper span{width:28px;text-align:center;font-size:12px;font-weight:bold}
+.del-btn{color:#dc2626;font-size:11px;font-weight:bold}
+
+/* EMPTY STATE */
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.empty p{margin-bottom:16px}
+.empty a{background:var(--rose);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:bold;display:inline-block}
+
+/* SUMMARY (STICKY BOTTOM) */
+.summary{position:fixed;bottom:0;width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);padding:16px 20px;z-index:50;box-shadow:0 -4px 20px rgba(0,0,0,.05)}
+.total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.total-row span{font-size:13px;color:var(--muted)}
+.total-row b{font-size:22px;color:var(--rose);font-family:Georgia,serif}
+.btn-checkout{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,var(--magenta),var(--rose));color:#fff;font-weight:800;font-size:15px;box-shadow:0 8px 20px rgba(219,39,119,.3);display:flex;align-items:center;justify-content:center;gap:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <a href="index.html" class="back-btn">←</a>
+    <div class="header-title">Keranjang</div>
+  </header>
+
+  <div class="cart-list" id="cartList">
+    <!-- Render keranjang lewat JS -->
+  </div>
+
+  <div class="summary" id="summaryBox" style="display:none;">
+    <div class="total-row">
+      <span>Total Pembayaran</span>
+      <b id="grandTotal">Rp 0</b>
+    </div>
+    <button class="btn-checkout" onclick="checkoutWA()">💬 Checkout via WhatsApp</button>
+  </div>
+</div>
+
+<script>
+  let cart = [];
+  try {
+    cart = JSON.parse(localStorage.getItem("rstumbler_cart")) || [];
+    if (!Array.isArray(cart)) cart = [];
+  } catch (e) {
+    localStorage.removeItem("rstumbler_cart");
+    cart = [];
+  }
+
+  const rupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
+
+  function renderCart() {
+    const el = document.getElementById("cartList");
+    const summary = document.getElementById("summaryBox");
+
+    if (cart.length === 0) {
+      el.innerHTML = `
+        <div class="empty">
+          <p>Keranjangmu masih kosong.</p>
+          <a href="index.html">Lihat Katalog</a>
+        </div>
+      `;
+      summary.style.display = "none";
+      return;
+    }
+
+    let total = 0;
+    el.innerHTML = cart.map((item, index) => {
+      const itemTotal = (item.price + (item.fee || 0)) * item.qty;
+      total += itemTotal;
+      
+      return `
+        <div class="cart-item">
+          <img src="${item.image || 'https://via.placeholder.com/100x100/fbcfe8/9d174d?text=Foto'}" class="item-img" alt="${item.name}">
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-meta">
+              ${item.size ? 'Ukuran: ' + item.size : ''} 
+              ${item.color ? '• Warna: ' + item.color : ''}
+              ${item.custom ? '• Custom: ' + item.custom : ''}
+            </div>
+            <div class="item-price">${rupiah(item.price + (item.fee || 0))}</div>
+            <div class="item-actions">
+              <div class="stepper">
+                <button onclick="updateQty(${index}, -1)">−</button>
+                <span>${item.qty}</span>
+                <button onclick="updateQty(${index}, 1)">+</button>
+              </div>
+              <button class="del-btn" onclick="removeItem(${index})">Hapus</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    document.getElementById("grandTotal").innerText = rupiah(total);
+    summary.style.display = "block";
+  }
+
+  function updateQty(index, change) {
+    if (cart[index].qty + change >= 1) {
+      cart[index].qty += change;
+      localStorage.setItem("rstumbler_cart", JSON.stringify(cart));
+      renderCart();
+    }
+  }
+
+  function removeItem(index) {
+    if(confirm("Hapus produk ini dari keranjang?")) {
+      cart.splice(index, 1);
+      localStorage.setItem("rstumbler_cart", JSON.stringify(cart));
+      renderCart();
+    }
+  }
+
+  function checkoutWA() {
+    if (cart.length === 0) return;
+
+    // Ambil nomor WA dari config
+    const CONFIG = window.SELARA_CONFIG || {};
+    const WA_NUMBER = CONFIG.waNumber || "";
+    
+    if (!WA_NUMBER) {
+      alert("Nomor WA Admin belum diatur di Environment Variables Netlify (WA_NUMBER).");
+      return;
+    }
+
+    let pesan = "Halo Admin, saya mau pesan produk berikut:\n\n";
+    let total = 0;
+
+    cart.forEach((item, i) => {
+      const subtotal = (item.price + (item.fee || 0)) * item.qty;
+      total += subtotal;
+      
+      pesan += `${i + 1}. *${item.name}*\n`;
+      if (item.size) pesan += `   Ukuran: ${item.size}\n`;
+      if (item.color) pesan += `   Warna: ${item.color}\n`;
+      if (item.custom) pesan += `   Custom Nama: ${item.custom}\n`;
+      pesan += `   Jumlah: ${item.qty} x ${rupiah(item.price + (item.fee || 0))}\n`;
+      pesan += `   Subtotal: ${rupiah(subtotal)}\n\n`;
+    });
+
+    pesan += `*Total Pembayaran: ${rupiah(total)}*\n\n`;
+    pesan += "Mohon info ketersediaan dan total ongkirnya ya. Terima kasih!";
+
+    const encodedPesan = encodeURIComponent(pesan);
+    window.open(`https://wa.me/${WA_NUMBER}?text=${encodedPesan}`, "_blank");
+  }
+
+  // Load config WA secara dinamis (karena keranjang.html tidak memanggil runtime-config)
+  // Kita fetch runtime-config.js secara manual agar CONFIG bisa dibaca
+  const script = document.createElement('script');
+  script.src = '/runtime-config.js';
+  document.head.appendChild(script);
+
+  // Render setelah config terload
+  script.onload = renderCart;
+  setTimeout(renderCart, 500); // Fallback
+</script>
+</body>
+</html>
