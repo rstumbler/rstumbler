@@ -93,6 +93,9 @@ a[href*="netlify.com"][style*="position: fixed"] {
       <div style="grid-column:1/-1;text-align:center;padding:20px;">Memuat produk...</div>
     </div>
   </main>
+<div style="text-align:center; padding:20px; font-size:11px; color:#a88992; margin-top:20px; margin-bottom:80px;">
+  <a href="admin.html" style="color:#a88992; text-decoration:none;">Admin Area</a>
+</div>
   <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
       <div class="modal-head">
@@ -218,7 +221,5 @@ a[href*="netlify.com"][style*="position: fixed"] {
   function updateBadge() { document.getElementById("cartBadge").innerText = cart.reduce((sum, item) => sum + item.qty, 0); }
   document.addEventListener("DOMContentLoaded", () => { loadProducts(); updateBadge(); });
 </script>
-<div style="text-align:center; padding:20px; font-size:11px; color:#a88992; margin-top:20px;">
-  <a href="admin.html" style="color:#a88992; text-decoration:none;">Admin Area</a>
-</div></body>
+</body>
 </html>
