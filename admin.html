@@ -137,6 +137,7 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
         </div>
         <div class="form-group"><label>Nama Produk</label><input type="text" id="pName" required></div>
         <div class="form-group"><label>Harga Jual (Rp)</label><input type="number" id="pPrice" required></div>
+        <div class="form-group"><label><input type="checkbox" id="pCustom" style="width:auto; margin-right:8px;"> Bisa Custom Nama (+Rp15.000)</label></div>
         <div class="form-group"><label>Harga Modal (Rp)</label><input type="number" id="pCost" required></div>
         <div class="form-group"><label>Ukuran (Pisahkan koma)</label><input type="text" id="pSizes" placeholder="500ml, 750ml"></div>
         <div class="form-group"><label>Warna (Pisahkan koma)</label><input type="text" id="pColors" placeholder="Pink, Ungu"></div>
@@ -296,7 +297,7 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
     try {
       // Upload foto jika ada file baru
       if (file) {
-        const fileName = `produk-${Date.now()}.${file.name.split('.').pop()}`;
+        const fileName = `produk-${Date.now() + '-' + Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
         const filePath = `produk/${fileName}`;
         const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(filePath, file);
         if (uploadError && uploadError.message.includes('not found')) {
@@ -320,6 +321,7 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
         name: document.getElementById('pName').value,
         price: Number(document.getElementById('pPrice').value),
         cost_price: Number(document.getElementById('pCost').value),
+        can_custom: document.getElementById('pCustom').checked,
         sizes: sizesArr.length ? sizesArr : null,
         colors: colorsArr.length ? colorsArr : null,
         image_url: imageUrl || null
@@ -354,6 +356,7 @@ a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:
     document.getElementById('pName').value = p.name;
     document.getElementById('pPrice').value = p.price;
     document.getElementById('pCost').value = p.cost_price;
+    document.getElementById('pCustom').checked = p.can_custom === true;
     document.getElementById('pSizes').value = p.sizes ? p.sizes.join(', ') : '';
     document.getElementById('pColors').value = p.colors ? p.colors.join(', ') : '';
     document.getElementById('pFile').value = '';
