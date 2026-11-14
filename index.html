@@ -204,6 +204,7 @@ iframe[title="Netlify"] {
     document.getElementById("mQty").innerText = currentQty;
     updateTotal();
     document.getElementById("overlay").classList.add("open");
+    history.pushState({ modalOpen: true }, "");
   }
   function selectSize(s) { currentSize = s; document.querySelectorAll("#mSizes .chip-btn").forEach(b => b.classList.toggle("active", b.innerText === s)); }
   function selectColor(c) { currentColor = c; document.querySelectorAll("#mColors .chip-btn").forEach(b => b.classList.toggle("active", b.innerText === c)); }
@@ -224,6 +225,14 @@ iframe[title="Netlify"] {
   }
   function updateBadge() { document.getElementById("cartBadge").innerText = cart.reduce((sum, item) => sum + item.qty, 0); }
   document.addEventListener("DOMContentLoaded", () => { loadProducts(); updateBadge(); });
+  window.addEventListener("popstate", (e) => {
+    const overlay = document.getElementById("overlay");
+    if (overlay.classList.contains("open")) {
+      closeModal(); // Tutup pop-up
+      // Mencegah halaman agar tidak reload atau pindah halaman saat back ditekan
+      history.pushState(null, "");
+    }
+  });
 </script>
 </body>
 </html>
