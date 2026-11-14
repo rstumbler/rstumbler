@@ -134,6 +134,8 @@ a[href*="netlify.com"][style*="position: fixed"] {
         <div class="form-group"><label>Nama Produk</label><input type="text" id="pName" required></div>
         <div class="form-group"><label>Harga Jual (Rp)</label><input type="number" id="pPrice" required></div>
         <div class="form-group"><label>Harga Modal (Rp)</label><input type="number" id="pCost" required></div>
+        <div class="form-group"><label>Ukuran (Pisahkan koma)</label><input type="text" id="pSizes" placeholder="500ml, 750ml"></div>
+        <div class="form-group"><label>Warna (Pisahkan koma)</label><input type="text" id="pColors" placeholder="Pink, Ungu"></div>
         <button type="submit" class="btn-save">Simpan Produk</button>
       </form>
     </div>
@@ -264,10 +266,14 @@ a[href*="netlify.com"][style*="position: fixed"] {
   // SUBMIT PRODUK
   document.getElementById('formProduk').onsubmit = async (e) => {
     e.preventDefault();
+    const sizes = document.getElementById('pSizes').value.split(',').map(s => s.trim()).filter(Boolean);
+    const colors = document.getElementById('pColors').value.split(',').map(c => c.trim()).filter(Boolean);
     const newProd = {
       name: document.getElementById('pName').value,
       price: Number(document.getElementById('pPrice').value),
-      cost_price: Number(document.getElementById('pCost').value)
+      cost_price: Number(document.getElementById('pCost').value),
+      sizes,
+      colors
     };
     try {
       const { error } = await supabaseClient.from('products').insert([newProd]);
