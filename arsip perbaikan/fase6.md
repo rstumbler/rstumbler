@@ -1,0 +1,457 @@
+# INSTRUKSI UNTUK CODEX: FASE 6 (DASHBOARD & SHOPPING LIST)
+
+Tugas: Timpa (replace) seluruh isi file `admin.html` dengan kode di bawah ini.
+Kode ini menyempurnakan halaman Dashboard Admin: menambahkan fitur Shopping List (daftar belanja otomatis) dan merapikan tampilan statistik.
+
+Setelah menimpa file, jalankan perintah terminal berikut:
+`git add .`
+`git commit -m "Fase 6: Dashboard & Shopping List"`
+`git push origin main`
+
+---
+
+## KODE FINAL `admin.html`
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Admin - RSTumbler</title>
+<style>
+:root{--rose:#9d174d;--magenta:#db2777;--pink:#fbcfe8;--blush:#fdf2f8;--ink:#1f1a1c;--muted:#7a6068;--line:#f3d1e3;--radius:16px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+body{background:#eef1f5;color:var(--ink);display:flex;justify-content:center;min-height:100vh}
+.app{width:100%;max-width:480px;background:#f8f9fb;min-height:100vh;position:relative;padding-bottom:100px}
+h1,h2,h3{font-family:Georgia,serif;font-weight:400}
+a{text-decoration:none;color:inherit} button{font:inherit;cursor:pointer;border:none;background:none}
+
+/* HEADER & NAV */
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.header-title{font-size:16px;font-weight:800}
+.btn-logout{font-size:12px;color:#dc2626;font-weight:bold}
+.bottom-nav{position:fixed;bottom:70px;width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);display:flex;padding:10px 0 14px;z-index:50; box-shadow: 0 -4px 10px rgba(0,0,0,0.05);}
+.nav-item{flex:1;text-align:center;font-size:10px;color:var(--muted);font-weight:600;cursor:pointer}
+.nav-item.active{color:var(--rose);font-weight:800}
+.nav-item span{display:block;font-size:18px;margin-bottom:4px}
+
+/* SECTION VIEWS */
+.view{display:none; padding:20px;}
+.view.active{display:block;}
+
+/* DASHBOARD CARDS */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;padding:16px;border-radius:12px;border:1px solid var(--line);text-align:center}
+.stat-card.p{background:linear-gradient(135deg,var(--magenta),var(--rose));color:#fff;border:none}
+.stat-title{font-size:11px;opacity:0.9;margin-bottom:6px}
+.stat-val{font-size:20px;font-weight:800;font-family:Georgia,serif}
+
+/* SHOPPING LIST */
+.shop-box{background:#fff;border-radius:12px;border:1px solid var(--line);padding:14px;margin-bottom:20px}
+.shop-title{font-size:13px;font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between;}
+.shop-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px}
+.shop-item:last-child{border-bottom:none;}
+.shop-item b{color:var(--rose);background:var(--blush);padding:2px 8px;border-radius:10px;}
+
+/* FORM & LIST */
+.section-title{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.btn-add{background:var(--rose);color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:bold}
+.card-item{background:#fff;padding:12px;border-radius:12px;border:1px solid var(--line);margin-bottom:10px;display:flex;align-items:center;gap:12px;position:relative}
+.card-img{width:60px;height:60px;border-radius:10px;object-fit:cover;background:var(--blush)}
+.card-info{flex:1;}
+.card-title{font-size:13px;font-weight:800;margin-bottom:4px;padding-right:60px;}
+.card-price{font-size:12px;font-weight:800;color:var(--rose)}
+.card-actions{position:absolute;top:12px;right:12px;display:flex;gap:6px;}
+.btn-icon{width:28px;height:28px;border-radius:6px;background:var(--blush);display:flex;align-items:center;justify-content:center;font-size:12px;border:1px solid var(--line);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:100}
+.overlay.open{display:flex}
+.modal{background:#fff;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;max-height:90vh;overflow-y:auto}
+.form-group{margin-bottom:12px}
+.form-group label{font-size:11px;font-weight:bold;display:block;margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:13px;outline:none}
+.btn-save{width:100%;padding:14px;background:var(--magenta);color:#fff;border-radius:10px;font-weight:bold;font-size:14px;margin-top:10px}
+
+/* LOGIN */
+.login-box{padding:40px 20px;text-align:center}
+.login-box h2{margin-bottom:20px;color:var(--rose)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="header-title">RSTumbler Admin</div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </header>
+
+  <!-- LOGIN -->
+  <div class="login-box" id="loginSection">
+    <h2>Login Admin</h2>
+    <div class="form-group" style="text-align:left;">
+      <label>Username</label>
+      <input type="text" id="email" placeholder="yayu">
+    </div>
+    <div class="form-group" style="text-align:left;">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••">
+    </div>
+    <button class="btn-login" id="btnLogin" style="width:100%;padding:14px;background:var(--rose);color:#fff;border-radius:10px;font-weight:bold;font-size:14px;margin-top:10px;">Masuk</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="view" id="view-dash">
+    <div class="stats">
+      <div class="stat-card p">
+        <div class="stat-title">Total Estimasi Profit</div>
+        <div class="stat-val" id="statProfit">Rp 0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Total Order Masuk</div>
+        <div class="stat-val" id="statOrder">0</div>
+      </div>
+    </div>
+
+    <div class="shop-box">
+      <div class="shop-title">
+        <span>🛒 Daftar Belanja (Stok)</span>
+      </div>
+      <div id="shoppingList" style="font-size:12px; color:var(--muted);">Belum ada pesanan yang perlu dibeli.</div>
+    </div>
+
+    <div class="section-title">
+      <span>Order Terbaru</span>
+    </div>
+    <div id="recentOrders"></div>
+  </div>
+
+  <!-- PRODUK -->
+  <div class="view" id="view-produk">
+    <div class="section-title">
+      <span>Daftar Produk</span>
+      <button class="btn-add" onclick="openProdForm()">+ Tambah</button>
+    </div>
+    <div id="productList"></div>
+  </div>
+
+  <!-- ORDER -->
+  <div class="view" id="view-order">
+    <div class="section-title">
+      <span>Daftar Order</span>
+      <button class="btn-add" onclick="openOrderForm()">+ Input Order</button>
+    </div>
+    <div id="orderList"></div>
+  </div>
+
+  <!-- NAV -->
+  <div class="bottom-nav" id="navSection" style="display:none;">
+    <div class="nav-item active" onclick="switchView('dash', this)"><span>📊</span>Dashboard</div>
+    <div class="nav-item" onclick="switchView('produk', this)"><span>📦</span>Produk</div>
+    <div class="nav-item" onclick="switchView('order', this)"><span>📋</span>Order</div>
+  </div>
+
+  <!-- MODAL PRODUK -->
+  <div class="overlay" id="overlayProd">
+    <div class="modal">
+      <h3 style="margin-bottom:16px;" id="prodFormTitle">Tambah Produk</h3>
+      <form id="formProduk">
+        <input type="hidden" id="pId">
+        <input type="hidden" id="pOldImage">
+        
+        <div class="form-group">
+          <label>Foto Produk</label>
+          <div id="imgPreview" style="width:100%;height:120px;background:var(--blush);border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:11px;color:var(--muted);">Belum ada foto</div>
+          <input type="file" id="pFile" accept="image/*" style="padding:8px;">
+        </div>
+        <div class="form-group"><label>Nama Produk</label><input type="text" id="pName" required></div>
+        <div class="form-group"><label>Harga Jual (Rp)</label><input type="number" id="pPrice" required></div>
+        <div class="form-group"><label>Harga Modal (Rp)</label><input type="number" id="pCost" required></div>
+        <div class="form-group"><label>Ukuran (Pisahkan koma)</label><input type="text" id="pSizes" placeholder="500ml, 750ml"></div>
+        <div class="form-group"><label>Warna (Pisahkan koma)</label><input type="text" id="pColors" placeholder="Pink, Ungu"></div>
+        
+        <div class="form-group" style="display:flex; align-items:center; gap:8px; background:var(--blush); padding:10px; border-radius:8px; border:1px solid var(--line);">
+          <input type="checkbox" id="pCustom" style="width:18px; height:18px; margin:0;">
+          <label for="pCustom" style="font-size:12px; margin:0; font-weight:bold;">Bisa Custom Nama (+Rp15.000)</label>
+        </div>
+
+        <button type="submit" class="btn-save" id="btnSaveProd">Simpan Produk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL ORDER -->
+  <div class="overlay" id="overlayOrder">
+    <div class="modal">
+      <h3 style="margin-bottom:16px;">Input Order Manual</h3>
+      <form id="formOrder">
+        <div class="form-group"><label>Nama Pembeli</label><input type="text" id="oName" required></div>
+        <div class="form-group"><label>No WhatsApp</label><input type="text" id="oWa" required></div>
+        <div class="form-group">
+          <label>Produk</label>
+          <select id="oProduct" required></select>
+        </div>
+        <div class="form-group"><label>Jumlah (Qty)</label><input type="number" id="oQty" value="1" required></div>
+        <button type="submit" class="btn-save">Simpan Order</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/runtime-config.js"></script>
+<script>
+  const CONFIG = window.SELARA_CONFIG || {};
+  let supabaseClient = null;
+  if (CONFIG.supabaseUrl && CONFIG.supabaseAnonKey) {
+    supabaseClient = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+  }
+  let ALL_PRODUCTS = [];
+
+  // INIT LOGIN
+  if (localStorage.getItem('rstumbler_admin') === 'true') {
+    showApp();
+  }
+
+  document.getElementById('btnLogin').onclick = async () => {
+    const user = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+    const btn = document.getElementById('btnLogin');
+    btn.innerText = 'Memproses...';
+    try {
+      const { error } = await supabaseClient.auth.signInWithPassword({ 
+        email: user + '@rstumbler.com', 
+        password: pass 
+      });
+      if (error) throw error;
+      localStorage.setItem('rstumbler_admin', 'true');
+      showApp();
+    } catch (err) { alert('Gagal: ' + err.message); } 
+    finally { btn.innerText = 'Masuk'; }
+  };
+
+  async function logout() {
+    await supabaseClient.auth.signOut();
+    localStorage.removeItem('rstumbler_admin');
+    location.reload();
+  }
+
+  function showApp() {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('navSection').style.display = 'flex';
+    switchView('dash', document.querySelector('.nav-item'));
+    loadData();
+  }
+
+  function switchView(view, el) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if(el) el.classList.add('active');
+  }
+
+  function openProdForm() { 
+    document.getElementById('prodFormTitle').innerText = 'Tambah Produk';
+    document.getElementById('formProduk').reset();
+    document.getElementById('pId').value = '';
+    document.getElementById('pOldImage').value = '';
+    document.getElementById('imgPreview').innerHTML = 'Belum ada foto';
+    document.getElementById('pCustom').checked = false;
+    document.getElementById('overlayProd').classList.add('open'); 
+  }
+  function openOrderForm() { document.getElementById('overlayOrder').classList.add('open'); }
+
+  // LOAD DATA & SHOPPING LIST
+  async function loadData() {
+    const { data: prod } = await supabaseClient.from('products').select('*');
+    ALL_PRODUCTS = prod || [];
+    
+    document.getElementById('productList').innerHTML = ALL_PRODUCTS.map(p => `
+      <div class="card-item">
+        <img src="${p.image_url || 'https://via.placeholder.com/100/fbcfe8/9d174d?text=Foto'}" class="card-img">
+        <div class="card-info">
+          <div class="card-title">${p.name}</div>
+          <div class="card-price">Rp ${p.price.toLocaleString('id-ID')}</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-icon" onclick="editProduct('${p.id}')">✏️</button>
+          <button class="btn-icon" onclick="deleteProduct('${p.id}')">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('oProduct').innerHTML = ALL_PRODUCTS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+    const { data: orders } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+    
+    if(orders) {
+      document.getElementById('orderList').innerHTML = orders.map(o => `
+        <div class="card-item">
+          <div class="card-title">${o.buyer_name}</div>
+          <div class="card-meta">WA: ${o.buyer_wa} • Qty: ${o.qty}</div>
+          <div class="card-price">Total: Rp ${o.total.toLocaleString('id-ID')}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('recentOrders').innerHTML = orders.slice(0,3).map(o => `
+        <div class="card-item">
+          <div class="card-title">${o.buyer_name}</div>
+          <div class="card-price">Rp ${o.total.toLocaleString('id-ID')}</div>
+        </div>
+      `).join('');
+
+      // HITUNG PROFIT & SHOPPING LIST
+      let totalProfit = 0;
+      let shoppingNeeds = {};
+
+      orders.forEach(o => {
+        const p = ALL_PRODUCTS.find(x => x.id === o.product_id);
+        if(p) {
+          if(p.cost_price) totalProfit += (p.price - p.cost_price) * o.qty;
+          
+          // Hitung daftar belanja
+          if(!shoppingNeeds[p.name]) shoppingNeeds[p.name] = 0;
+          shoppingNeeds[p.name] += o.qty;
+        }
+      });
+
+      document.getElementById('statProfit').innerText = 'Rp ' + totalProfit.toLocaleString('id-ID');
+      document.getElementById('statOrder').innerText = orders.length;
+
+      // Render Shopping List
+      const shopListEl = document.getElementById('shoppingList');
+      const shopKeys = Object.keys(shoppingNeeds);
+      if (shopKeys.length > 0) {
+        shopListEl.innerHTML = shopKeys.map(name => `
+          <div class="shop-item">
+            <span>${name}</span>
+            <b>${shoppingNeeds[name]} pcs</b>
+          </div>
+        `).join('');
+      } else {
+        shopListEl.innerHTML = 'Belum ada pesanan yang perlu dibeli.';
+      }
+    }
+  }
+
+  // SUBMIT PRODUK (TAMBAH / EDIT)
+  document.getElementById('formProduk').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveProd');
+    btn.innerText = 'Menyimpan...';
+    btn.disabled = true;
+
+    const id = document.getElementById('pId').value;
+    const oldImage = document.getElementById('pOldImage').value;
+    const file = document.getElementById('pFile').files[0];
+    let imageUrl = oldImage;
+
+    try {
+      if (file) {
+        const fileName = `produk-${Date.now()}.${file.name.split('.').pop()}`;
+        const filePath = `produk/${fileName}`;
+        
+        let { error: uploadError } = await supabaseClient.storage.from('product-images').upload(filePath, file);
+        
+        if (uploadError && (uploadError.message.includes('not found') || uploadError.message.includes('Bucket not found'))) {
+            await supabaseClient.storage.from('product-images').upload('produk/.init', new Blob(['']));
+            const retry = await supabaseClient.storage.from('product-images').upload(filePath, file);
+            if (retry.error) throw new Error("Gagal upload foto: " + retry.error.message);
+        } else if (uploadError) {
+            throw new Error("Gagal upload foto: " + uploadError.message);
+        }
+        
+        const { data: publicUrl } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
+        imageUrl = publicUrl.publicUrl;
+      }
+
+      const sizesArr = document.getElementById('pSizes').value.split(',').map(s=>s.trim()).filter(Boolean);
+      const colorsArr = document.getElementById('pColors').value.split(',').map(s=>s.trim()).filter(Boolean);
+
+      const newProd = {
+        name: document.getElementById('pName').value,
+        price: Number(document.getElementById('pPrice').value),
+        cost_price: Number(document.getElementById('pCost').value),
+        sizes: sizesArr.length ? sizesArr : null,
+        colors: colorsArr.length ? colorsArr : null,
+        can_custom: document.getElementById('pCustom').checked,
+        image_url: imageUrl || null
+      };
+
+      if (id) {
+        const { error } = await supabaseClient.from('products').update(newProd).eq('id', id);
+        if (error) throw error;
+        alert('Produk diupdate!');
+      } else {
+        const { error } = await supabaseClient.from('products').insert([newProd]);
+        if (error) throw error;
+        alert('Produk ditambahkan!');
+      }
+
+      document.getElementById('overlayProd').classList.remove('open');
+      loadData();
+    } catch(err) { alert('Gagal: ' + err.message); }
+    finally { btn.innerText = 'Simpan Produk'; btn.disabled = false; }
+  };
+
+  function editProduct(id) {
+    const p = ALL_PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('prodFormTitle').innerText = 'Edit Produk';
+    document.getElementById('pId').value = p.id;
+    document.getElementById('pOldImage').value = p.image_url || '';
+    document.getElementById('pName').value = p.name;
+    document.getElementById('pPrice').value = p.price;
+    document.getElementById('pCost').value = p.cost_price;
+    document.getElementById('pSizes').value = p.sizes ? p.sizes.join(', ') : '';
+    document.getElementById('pColors').value = p.colors ? p.colors.join(', ') : '';
+    document.getElementById('pCustom').checked = p.can_custom || false;
+    document.getElementById('pFile').value = '';
+
+    const preview = document.getElementById('imgPreview');
+    if (p.image_url) {
+      preview.innerHTML = `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:contain;">`;
+    } else {
+      preview.innerHTML = 'Belum ada foto';
+    }
+
+    document.getElementById('overlayProd').classList.add('open');
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('Yakin mau hapus produk ini?')) return;
+    try {
+      const { error } = await supabaseClient.from('products').delete().eq('id', id);
+      if (error) throw error;
+      alert('Produk dihapus!');
+      loadData();
+    } catch(err) { alert('Gagal: ' + err.message); }
+  }
+
+  document.getElementById('formOrder').onsubmit = async (e) => {
+    e.preventDefault();
+    const pId = document.getElementById('oProduct').value;
+    const qty = Number(document.getElementById('oQty').value);
+    const prod = ALL_PRODUCTS.find(x => x.id === pId);
+    
+    const newOrder = {
+      buyer_name: document.getElementById('oName').value,
+      buyer_wa: document.getElementById('oWa').value,
+      product_id: pId,
+      qty: qty,
+      total: prod.price * qty
+    };
+
+    try {
+      const { error } = await supabaseClient.from('orders').insert([newOrder]);
+      if (error) throw error;
+      alert('Order dicatat!');
+      document.getElementById('overlayOrder').classList.remove('open');
+      document.getElementById('formOrder').reset();
+      loadData();
+    } catch(err) { alert('Gagal: ' + err.message); }
+  };
+</script>
+</body>
+</html>
