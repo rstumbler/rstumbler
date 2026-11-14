@@ -71,7 +71,7 @@ main{padding:0 16px}
       <span class="logo-text"><b>RSTUMBLER</b><small>PREMIUM</small></span>
     </a>
     <button class="cart-btn" onclick="alert('Halaman keranjang segera hadir!')">
-      ðŸ›’ Keranjang <span class="cart-badge" id="cartBadge">0</span>
+      🛒 Keranjang <span class="cart-badge" id="cartBadge">0</span>
     </button>
   </header>
   <main>
@@ -80,7 +80,7 @@ main{padding:0 16px}
       <p>Temukan tumbler favoritmu, atur warna & ukuran, lalu pesan.</p>
     </div>
     <div class="catalog-bar">
-      <label class="search-box">ðŸ” <input id="searchInput" placeholder="Cari tumbler..."></label>
+      <label class="search-box">🔍 <input id="searchInput" placeholder="Cari tumbler..."></label>
     </div>
     <div class="grid" id="grid">
       <div style="grid-column:1/-1;text-align:center;padding:20px;">Memuat produk...</div>
@@ -90,7 +90,7 @@ main{padding:0 16px}
     <div class="modal">
       <div class="modal-head">
         <h2>Detail Produk</h2>
-        <button class="close-btn" onclick="closeModal()">âœ•</button>
+        <button class="close-btn" onclick="closeModal()">✕</button>
       </div>
       <img class="modal-img" id="mImg" src="" alt="">
       <div class="modal-body">
@@ -111,7 +111,7 @@ main{padding:0 16px}
         <div class="qty-row">
           <b>Jumlah</b>
           <div class="stepper">
-            <button onclick="changeQty(-1)">âˆ’</button>
+            <button onclick="changeQty(-1)">−</button>
             <span id="mQty">1</span>
             <button onclick="changeQty(1)">+</button>
           </div>
